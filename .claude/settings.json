@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s \"http://localhost:5174/src/components/SigBlock.vue\")",
+      "Bash(cp /Users/seojonghwan/Desktop/graiptek/logo-griptec.svg /Users/seojonghwan/Desktop/graiptek/public/logo-griptec.svg)"
+    ],
+    "additionalDirectories": [
+      "/Users/seojonghwan/Desktop/graiptek"
+    ]
+  }
+}
