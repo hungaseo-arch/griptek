@@ -8,3 +8,8 @@ npm-debug.log*
 .vscode/*
 !.vscode/extensions.json
 .idea
+*.tsbuildinfo
+.claude
+.env
+.env.*
+!.env.example

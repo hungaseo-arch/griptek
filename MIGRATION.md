@@ -1,8 +1,8 @@
-# Graiptek Business Forms · React → Vue 3 마이그레이션 노트
+# GRIPTEK Business Forms · React → Vue 3 마이그레이션 노트
 
 > 마이그레이션 일자: 2026-05-22
-> 원본: `graiptek_current/` (React 19 + 단일 `App.tsx` 747줄 + 인라인 스타일)
-> 산출물: `graiptek_vue/` (Vue 3 SFC + 컴포넌트 분리 + TailwindCSS 클래스)
+> 원본: `GRIPTEK_current/` (React 19 + 단일 `App.tsx` 747줄 + 인라인 스타일)
+> 산출물: `GRIPTEK_vue/` (Vue 3 SFC + 컴포넌트 분리 + TailwindCSS 클래스)
 
 마이그레이션 결정 사항 — ① 인라인 스타일 → **전체 Tailwind 클래스 변환**,
 ② 단일 파일 → **컴포넌트 분리**, ③ 빈 양식 → **입력 가능 폼 + 자동 계산**.

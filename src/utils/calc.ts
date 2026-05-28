@@ -9,6 +9,28 @@ export function todayDocNo(prefix: string, seq = '01'): string {
   return `${prefix}-${dd}${mm}${yyyy}-${seq}`;
 }
 
+/** 회사 약어 포함 문서 번호 — 형식: PREFIX-ABBR-MMYYYY-seq. 약어가 빈 값이면 ABBR 구획을 생략. */
+export function companyDocNo(prefix: string, abbr: string, seq = '01'): string {
+  const d = new Date();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  const mid = abbr ? `${abbr}-` : '';
+  return `${prefix}-${mid}${mm}${yyyy}-${seq}`;
+}
+
+/** 회사명 약어 — 법인형태(PT/CV/UD/PD) 접두어를 떼고 각 단어 첫 글자 (최대 3자, 대문자). 'PT Kostec Prima Baja' → 'KPB' */
+export function companyAbbr(name: string): string {
+  return name
+    .replace(/^(PT|CV|UD|PD)\.?\s+/i, '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((w) => w[0])
+    .slice(0, 3)
+    .join('')
+    .toUpperCase();
+}
+
 // ─── 금액 계산 유틸리티 (Calculation / Perhitungan) ──────────────────────────
 // 입력 가능한 폼의 자동 계산 로직. 모든 입력값은 문자열로 저장하고
 // 계산 시점에 num() 으로 안전하게 파싱한다.

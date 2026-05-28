@@ -3,6 +3,7 @@
 import { reactive, ref } from 'vue';
 import { CO } from '@/data/company';
 import { usePackingDoc } from '@/composables/usePackingDoc';
+import { useDocManager } from '@/composables/useDocManager';
 import { todayDocNo } from '@/utils/calc';
 import DocPage from '@/components/DocPage.vue';
 import CompanyHeader from '@/components/CompanyHeader.vue';
@@ -50,6 +51,20 @@ const infoRows: { leftLabel: string; leftKey: string; rightLabel: string; rightK
 
 const { items, totalPkgs, totalNetWt, totalGrossWt, totalCbm, addRow, removeRow } = usePackingDoc(3);
 const remarks = ref('');
+
+useDocManager(
+  'PL',
+  () => meta.plNumber,
+  () => ({ meta, shipper, consignee, info, items, remarks: remarks.value }),
+  (p) => {
+    Object.assign(meta, p.meta as Record<string, string>);
+    Object.assign(shipper, p.shipper as Record<string, string>);
+    Object.assign(consignee, p.consignee as Record<string, string>);
+    Object.assign(info, p.info as Record<string, string>);
+    if (Array.isArray(p.items)) items.splice(0, items.length, ...(p.items as typeof items));
+    remarks.value = typeof p.remarks === 'string' ? p.remarks : '';
+  },
+);
 </script>
 
 <template>

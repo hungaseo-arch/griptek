@@ -3,6 +3,7 @@
 import { reactive } from 'vue';
 import { CO } from '@/data/company';
 import { useMoneyDoc } from '@/composables/useMoneyDoc';
+import { useDocManager } from '@/composables/useDocManager';
 import { todayDocNo } from '@/utils/calc';
 import DocPage from '@/components/DocPage.vue';
 import CompanyHeader from '@/components/CompanyHeader.vue';
@@ -48,6 +49,19 @@ const infoRows: { leftLabel: string; leftKey: string; rightLabel: string; rightK
 ];
 
 const { items, sumQty, sumNet, addRow, removeRow } = useMoneyDoc(3, false);
+
+useDocManager(
+  'CI',
+  () => meta.invoiceNo,
+  () => ({ meta, exporter, consignee, info, items }),
+  (p) => {
+    Object.assign(meta, p.meta as Record<string, string>);
+    Object.assign(exporter, p.exporter as Record<string, string>);
+    Object.assign(consignee, p.consignee as Record<string, string>);
+    Object.assign(info, p.info as Record<string, string>);
+    if (Array.isArray(p.items)) items.splice(0, items.length, ...(p.items as typeof items));
+  },
+);
 </script>
 
 <template>
@@ -69,9 +83,12 @@ const { items, sumQty, sumNet, addRow, removeRow } = useMoneyDoc(3, false);
 
     <InfoGrid :rows="infoRows" :model="info" />
 
-    <MoneyItemsTable :items="items" :on-add-row="addRow" :on-remove-row="removeRow" />
+    <MoneyItemsTable
+      :items="items" :sum-qty="sumQty" :sum-amount="sumNet"
+      :on-add-row="addRow" :on-remove-row="removeRow"
+    />
 
-    <MoneyDocSummary :sum-qty="sumQty" :sum-amount="sumNet" />
+    <MoneyDocSummary :sum-amount="sumNet" />
 
     <div
       class="bg-graybg border border-[#ddd] px-3 py-2 text-[8.5px] text-[#444]

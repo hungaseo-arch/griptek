@@ -1,4 +1,4 @@
-# CV Graiptek Solusi — Business Document Forms (Vue 3)
+# CV GRIPTEK Solusi — Business Document Forms (Vue 3)
 
 > React 19 단일 파일 앱 → **Vue 3 + TailwindCSS** 마이그레이션 완료본
 > 5종 비즈니스 양식(Purchasing Order, Proforma Invoice, Commercial Invoice, Packing List, Quotation)을
@@ -35,7 +35,7 @@ npm run type-check # 타입 검사만 실행
 ## 3. 폴더 구조 (Struktur folder)
 
 ```
-graiptek_vue/
+GRIPTEK_vue/
 ├── index.html
 ├── package.json
 ├── vite.config.ts

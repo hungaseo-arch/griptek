@@ -28,12 +28,13 @@ defineProps<{
           <FieldInput v-model="model[r.leftKey]" />
         </td>
         <td class="w-[4%]" />
-        <td class="bg-graybg text-navy font-bold text-[9px] px-2 py-1 whitespace-nowrap
-                   border border-[#ddd] align-top text-left w-[15%]">
-          {{ r.rightLabel }} :
+        <td class="text-navy font-bold text-[9px] px-2 py-1 whitespace-nowrap
+                   border border-[#ddd] align-top text-left w-[15%]"
+            :class="r.rightLabel ? 'bg-graybg' : ''">
+          <template v-if="r.rightLabel">{{ r.rightLabel }} :</template>
         </td>
         <td class="border border-[#ddd] px-2 py-1 text-[10px] align-top text-left w-[33%]">
-          <FieldInput v-model="model[r.rightKey]" />
+          <FieldInput v-if="r.rightKey" v-model="model[r.rightKey]" />
         </td>
       </tr>
     </tbody>

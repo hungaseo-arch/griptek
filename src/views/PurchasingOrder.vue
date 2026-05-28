@@ -3,6 +3,7 @@
 import { reactive } from 'vue';
 import { CO } from '@/data/company';
 import { useMoneyDoc } from '@/composables/useMoneyDoc';
+import { useDocManager } from '@/composables/useDocManager';
 import { todayDocNo } from '@/utils/calc';
 import DocPage from '@/components/DocPage.vue';
 import CompanyHeader from '@/components/CompanyHeader.vue';
@@ -39,6 +40,19 @@ const infoRows: { leftLabel: string; leftKey: string; rightLabel: string; rightK
 ];
 
 const { items, sumQty, sumNet, addRow, removeRow } = useMoneyDoc(3, false);
+
+useDocManager(
+  'PO',
+  () => meta.poNumber,
+  () => ({ meta, vendor, shipTo, info, items }),
+  (p) => {
+    Object.assign(meta, p.meta as Record<string, string>);
+    Object.assign(vendor, p.vendor as Record<string, string>);
+    Object.assign(shipTo, p.shipTo as Record<string, string>);
+    Object.assign(info, p.info as Record<string, string>);
+    if (Array.isArray(p.items)) items.splice(0, items.length, ...(p.items as typeof items));
+  },
+);
 </script>
 
 <template>
@@ -60,9 +74,12 @@ const { items, sumQty, sumNet, addRow, removeRow } = useMoneyDoc(3, false);
 
     <InfoGrid :rows="infoRows" :model="info" />
 
-    <MoneyItemsTable :items="items" :on-add-row="addRow" :on-remove-row="removeRow" />
+    <MoneyItemsTable
+      :items="items" :sum-qty="sumQty" :sum-amount="sumNet"
+      :on-add-row="addRow" :on-remove-row="removeRow"
+    />
 
-    <MoneyDocSummary :sum-qty="sumQty" :sum-amount="sumNet" />
+    <MoneyDocSummary :sum-amount="sumNet" />
     <SigBlock :labels="['Prepared By', 'Approved By', 'Received By']" :sub1="CO.pic" :sub2="CO.name" />
     <FooterNote class="mt-auto"
       :note="`This Purchase Order constitutes an agreement between ${CO.name} and the vendor. All goods must match specifications. Unauthorized substitutions are not accepted.`"

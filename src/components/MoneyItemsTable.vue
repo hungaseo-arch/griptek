@@ -4,6 +4,8 @@ import { lineNetUnit, lineNet, fmtOrDash, type MoneyItem } from '@/utils/calc';
 
 defineProps<{
   items: MoneyItem[];
+  sumQty: number;
+  sumAmount: number;
   onAddRow: () => void;
   onRemoveRow: (index: number) => void;
 }>();
@@ -18,18 +20,18 @@ const TD = 'border border-[#ddd] px-[5px] py-[5px] text-[10px] align-top';
     <colgroup>
       <!-- Left 50%: No. + Item + Brand + Item Description -->
       <col style="width:3.5%" />
-      <col style="width:4.5%" />
-      <col style="width:5%" />
-      <col style="width:37%" />
-      <!-- Right 50%: Qty + Unit + Unit Price + Disc + Net Price + Amount + Margin + Delete -->
-      <col style="width:4.5%" />
-      <col style="width:4.5%" />
-      <col style="width:9%" />
       <col style="width:6%" />
-      <col style="width:8%" />
-      <col style="width:8%" />
-      <col class="no-print" style="width:5.5%" />
-      <col class="no-print" style="width:4.5%" />
+      <col style="width:10%" />
+      <col />
+      <!-- Right 50%: Qty + Unit + Unit Price + Disc + Net Price + Amount + Margin + Delete -->
+      <col style="width:6%" />
+      <col style="width:6%" />
+      <col style="width:11%" />
+      <col style="width:6%" />
+      <col style="width:11%" />
+      <col style="width:12%" />
+      <col class="no-print" style="width:5%" />
+      <col class="no-print" style="width:3%" />
     </colgroup>
     <thead>
       <tr>
@@ -82,6 +84,21 @@ const TD = 'border border-[#ddd] px-[5px] py-[5px] text-[10px] align-top';
         </td>
       </tr>
     </tbody>
+    <tfoot>
+      <tr class="bg-graybg">
+        <td colspan="4" class="border border-[#ddd] text-navy font-semibold px-2.5 py-1 text-right">
+          Sub-Total
+        </td>
+        <td class="border border-[#ddd] text-navy font-semibold px-1.5 py-1 text-center">
+          {{ fmtOrDash(sumQty) }}
+        </td>
+        <td colspan="4" class="border border-[#ddd]" />
+        <td class="border border-[#ddd] text-navy font-semibold px-2 py-1 text-right">
+          {{ fmtOrDash(sumAmount) }}
+        </td>
+        <td colspan="2" class="no-print border border-[#ddd]" />
+      </tr>
+    </tfoot>
   </table>
 
   <div class="no-print mb-0.5">

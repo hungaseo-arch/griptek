@@ -28,12 +28,17 @@ const rows = [0, 1, 2, 3];
             di === 2 && ci === 1 ? 'text-navy' : '',
           ]"
         >
-          {{
+          <img
+            v-if="di === 1 && ci === 1"
+            src="/maria.png" alt="Signature"
+            class="mx-auto max-h-12 object-contain"
+          />
+          <template v-else>{{
             di === 0 ? lbl
             : di === 2 && ci === 1 ? sub1
             : di === 3 ? 'Name, Date & Signature'
             : ''
-          }}
+          }}</template>
         </td>
       </tr>
     </tbody>

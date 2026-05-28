@@ -1,9 +1,9 @@
 // vite.config.ts
-import { defineConfig } from "file:///sessions/hopeful-busy-euler/mnt/outputs/graiptek_vue/node_modules/vite/dist/node/index.js";
-import vue from "file:///sessions/hopeful-busy-euler/mnt/outputs/graiptek_vue/node_modules/@vitejs/plugin-vue/dist/index.mjs";
-import tailwindcss from "file:///sessions/hopeful-busy-euler/mnt/outputs/graiptek_vue/node_modules/@tailwindcss/vite/dist/index.mjs";
+import { defineConfig } from "file:///sessions/hopeful-busy-euler/mnt/outputs/GRIPTEK_vue/node_modules/vite/dist/node/index.js";
+import vue from "file:///sessions/hopeful-busy-euler/mnt/outputs/GRIPTEK_vue/node_modules/@vitejs/plugin-vue/dist/index.mjs";
+import tailwindcss from "file:///sessions/hopeful-busy-euler/mnt/outputs/GRIPTEK_vue/node_modules/@tailwindcss/vite/dist/index.mjs";
 import path from "node:path";
-var __vite_injected_original_dirname = "/sessions/hopeful-busy-euler/mnt/outputs/graiptek_vue";
+var __vite_injected_original_dirname = "/sessions/hopeful-busy-euler/mnt/outputs/GRIPTEK_vue";
 var vite_config_default = defineConfig({
   plugins: [
     vue(),

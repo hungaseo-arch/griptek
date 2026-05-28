@@ -6,7 +6,7 @@ import { CO } from '@/data/company';
 <template>
   <td class="w-[50%] bg-navy align-top rounded-tl-md px-4.5 py-3.5">
     <div class="flex items-center justify-between gap-3">
-      <img src="/logo-griptec.png" alt="Graiptek logo" class="company-logo h-25 w-auto object-contain shrink-0" />
+      <img src="/logo-griptec.png" alt="GRIPTEK logo" class="company-logo h-25 w-auto object-contain shrink-0" />
       <div>
         <div class="text-white text-[18px] font-bold tracking-[1px]">{{ CO.name }}</div>
         <div class="text-lightblue text-[9px] mt-1.25 leading-[1.8]">

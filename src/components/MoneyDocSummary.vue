@@ -3,7 +3,7 @@ import { ref, computed } from 'vue';
 import FieldInput from '@/components/ui/FieldInput.vue';
 import { fmtOrDash, num } from '@/utils/calc';
 
-const props = defineProps<{ sumQty: number; sumAmount: number }>();
+const props = defineProps<{ sumAmount: number }>();
 
 const addDiscPct = ref('');
 const PPN = 0.11;
@@ -28,12 +28,6 @@ const RATE = 'bg-white text-[10px] px-1.5 py-1 text-center';
       <col style="width:33%" />
     </colgroup>
     <tbody>
-      <!-- Sub-Total -->
-      <tr>
-        <td :class="LBL">Sub-Total</td>
-        <td :class="RATE">{{ fmtOrDash(sumQty) }} Qty</td>
-        <td :class="VAL">{{ fmtOrDash(sumAmount) }}</td>
-      </tr>
       <!-- Additional Discount -->
       <tr>
         <td :class="LBL">Discount</td>
