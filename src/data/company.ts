@@ -11,12 +11,15 @@ export const CO = {
   pic:   'Maria Panjaitan',
 } as const;
 
+/** `tel:` 링크용 정규화 번호(숫자·+ 만). 여러 뷰에서 공용 사용. */
+export const PHONE_TEL = CO.phone.replace(/[^+0-9]/g, '');
+
 // Quotation — 은행 / 결제 정보
 export const BANK: { label: string; value: string }[] = [
-  { label: 'Bank Name',    value: '' },
-  { label: 'Account No.',  value: '' },
-  { label: 'Account Name', value: 'CV GRIPTEK Solusi' },
-  { label: 'Branch',       value: '' },
+  { label: 'Bank Name',    value: 'Bank BCA' },
+  { label: 'Account No.',  value: '7167900222' },
+  { label: 'Account Name', value: 'CV GRIPTEK SOLUSI OTOMOTIF' },
+  { label: 'Branch',       value: 'KCP Kota Kasablanka' },
   { label: 'Swift Code',   value: '' },
 ];
 

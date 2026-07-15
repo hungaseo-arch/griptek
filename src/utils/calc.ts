@@ -1,34 +1,38 @@
+// ─── 날짜 (date picker · YYYY-MM-DD) ──────────────────────────────────────────
+
+/** 오늘 날짜 (로컬, YYYY-MM-DD) — `<input type="date">` 기본값용 */
+export function todayISO(): string {
+  const d = new Date();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${mm}-${dd}`;
+}
+
+/** 오늘 + months 개월 (로컬, YYYY-MM-DD) */
+export function addMonthsISO(months: number): string {
+  const d = new Date();
+  d.setMonth(d.getMonth() + months);
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${mm}-${dd}`;
+}
+
 // ─── 문서 번호 생성 ────────────────────────────────────────────────────────────
 
-/** 오늘 날짜 기준 문서 번호 생성 — 형식: PREFIX-DDMMYYYY-seq */
-export function todayDocNo(prefix: string, seq = '01'): string {
+/** 문서 번호 — 형식: PREFIX-YYYYMMDD-ABBR-seq. 약어(회사명)가 빈 값이면 ABBR 구획을 생략. */
+export function companyDocNo(prefix: string, abbr: string, seq = '1'): string {
   const d = new Date();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
   const dd = String(d.getDate()).padStart(2, '0');
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const yyyy = d.getFullYear();
-  return `${prefix}-${dd}${mm}${yyyy}-${seq}`;
-}
-
-/** 회사 약어 포함 문서 번호 — 형식: PREFIX-ABBR-MMYYYY-seq. 약어가 빈 값이면 ABBR 구획을 생략. */
-export function companyDocNo(prefix: string, abbr: string, seq = '01'): string {
-  const d = new Date();
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const yyyy = d.getFullYear();
   const mid = abbr ? `${abbr}-` : '';
-  return `${prefix}-${mid}${mm}${yyyy}-${seq}`;
+  return `${prefix}-${d.getFullYear()}${mm}${dd}-${mid}${seq}`;
 }
 
-/** 회사명 약어 — 법인형태(PT/CV/UD/PD) 접두어를 떼고 각 단어 첫 글자 (최대 3자, 대문자). 'PT Kostec Prima Baja' → 'KPB' */
+/** 회사명 약어 — 법인형태(PT/CV/UD/PD) 접두어를 떼고 첫 단어의 앞 3글자(대문자). 'PT Ascendo Internasional' → 'ASC' */
 export function companyAbbr(name: string): string {
-  return name
-    .replace(/^(PT|CV|UD|PD)\.?\s+/i, '')
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((w) => w[0])
-    .slice(0, 3)
-    .join('')
-    .toUpperCase();
+  const cleaned = name.replace(/^(PT|CV|UD|PD)\.?\s+/i, '').trim();
+  const first = cleaned.split(/\s+/)[0] ?? '';
+  return first.slice(0, 3).toUpperCase();
 }
 
 // ─── 금액 계산 유틸리티 (Calculation / Perhitungan) ──────────────────────────
@@ -60,15 +64,24 @@ export interface MoneyItem {
   desc2: string;      // 예비 필드 (하위 호환)
   qty: string;
   unit: string;
+  whPrice: string;    // 입고가(원가) — 제품 불러올 때 채워짐. Margin 자동계산용.
   unitPrice: string;
   discPct: string;
   taxPct: string;
-  margin: string;     // Margin %
+  margin: string;     // Margin % (자동계산 표시값, 하위 호환 위해 유지)
+  productSku: string; // 연결된 제품 SKU — Unit(pcs/set) 변경 시 재가격 산정용.
 }
 
 /** 빈 MoneyItem 생성. */
 export function emptyMoneyItem(defaultTax = ''): MoneyItem {
-  return { itemType: '', brand: '', desc: '', desc2: '', qty: '', unit: '', unitPrice: '', discPct: '', taxPct: defaultTax, margin: '' };
+  return { itemType: '', brand: '', desc: '', desc2: '', qty: '', unit: '', whPrice: '', unitPrice: '', discPct: '', taxPct: defaultTax, margin: '', productSku: '' };
+}
+
+/** 라인 마진율(%) = (할인후 단가 − 입고가) / 입고가 × 100. 입고가/단가 없으면 null. */
+export function lineMargin(it: MoneyItem): number | null {
+  const wh = num(it.whPrice);
+  if (!wh || !num(it.unitPrice)) return null;
+  return ((lineNetUnit(it) - wh) / wh) * 100;
 }
 
 /** 할인 적용 후 단가 = unitPrice × (1 − discPct%) */

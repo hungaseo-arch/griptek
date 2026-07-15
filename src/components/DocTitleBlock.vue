@@ -9,6 +9,12 @@ defineProps<{
   /** 메타 값 reactive 레코드 */
   model: Record<string, string>;
 }>();
+
+// 날짜 키('date'/…Date/validUntil)는 달력 입력으로.
+function fieldType(key: string): 'text' | 'date' {
+  const k = key.toLowerCase();
+  return k === 'date' || k.endsWith('date') || k === 'validuntil' ? 'date' : 'text';
+}
 </script>
 
 <template>
@@ -23,7 +29,7 @@ defineProps<{
             {{ f.label }}
           </td>
           <td class="bg-white text-[9px] px-2 py-1 border border-[#ddd]">
-            <FieldInput v-model="model[f.key]" />
+            <FieldInput v-model="model[f.key]" :type="fieldType(f.key)" />
           </td>
         </tr>
       </tbody>

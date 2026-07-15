@@ -4,7 +4,13 @@ import { reactive, watch, nextTick } from 'vue';
 import { CO, BANK, TC } from '@/data/company';
 import { useMoneyDoc } from '@/composables/useMoneyDoc';
 import { useDocManager } from '@/composables/useDocManager';
-import { companyDocNo, companyAbbr } from '@/utils/calc';
+import { useProductPicker } from '@/composables/useProductPicker';
+import { useCustomers } from '@/composables/useCustomers';
+import { type Customer } from '@/lib/customersApi';
+import { companyDocNo, companyAbbr, todayISO, addMonthsISO } from '@/utils/calc';
+import EmailLogin from '@/components/EmailLogin.vue';
+import ProductPickerBar from '@/components/ProductPickerBar.vue';
+import CustomerPicker from '@/components/CustomerPicker.vue';
 import DocPage from '@/components/DocPage.vue';
 import CompanyHeader from '@/components/CompanyHeader.vue';
 import DocTitleBlock from '@/components/DocTitleBlock.vue';
@@ -15,13 +21,8 @@ import MoneyDocSummary from '@/components/MoneyDocSummary.vue';
 import SigBlock from '@/components/SigBlock.vue';
 import FooterNote from '@/components/FooterNote.vue';
 
-// Valid Until 기본값 — 견적일(오늘)로부터 1개월 후. 입력칸이므로 자유롭게 수정 가능.
-function oneMonthFromToday(): string {
-  const d = new Date();
-  d.setMonth(d.getMonth() + 1);
-  return d.toLocaleDateString('en-GB');
-}
-const meta = reactive<Record<string, string>>({ quotationNo: companyDocNo('QT', ''), date: '', validUntil: oneMonthFromToday() });
+// Date=오늘, Valid Until=오늘+1개월(달력 입력, 자유 수정 가능).
+const meta = reactive<Record<string, string>>({ quotationNo: companyDocNo('QT', ''), date: todayISO(), validUntil: addMonthsISO(1) });
 const titleFields: { label: string; key: string }[] = [
   { label: 'Quotation No.', key: 'quotationNo' },
   { label: 'Date', key: 'date' },
@@ -54,6 +55,18 @@ watch(
   },
 );
 
+// 등록 고객 → 선택 시 자동입력 / 저장 시 자동 누적.
+const { customers } = useCustomers();
+function applyCustomer(c: Customer): void {
+  info.company = c.name;
+  info.address = c.address ?? '';
+  info.contact = c.contact ?? '';
+  info.phone = c.phone ?? '';
+  info.email = c.email ?? '';
+  info.npwp = c.npwp ?? '';
+}
+
+// 저장/불러오기는 DB(API). 저장 시 구매고객을 customers 테이블에 자동 누적.
 useDocManager(
   'QT',
   () => meta.quotationNo,
@@ -65,11 +78,22 @@ useDocManager(
     if (Array.isArray(p.items)) items.splice(0, items.length, ...(p.items as typeof items));
     nextTick(() => { suppressDocNo = false; });
   },
+  undefined,
+  () => ({ name: info.company, address: info.address, phone: info.phone, email: info.email, contact: info.contact, npwp: info.npwp }),
 );
+
+// (PDF 저장 파일명 = 문서 명칭 → DocPage 가 document.title 처리)
+
+// ── 제품 추천/가격 (QT/PO/PI/CI 공용 컴포저블) ──
+const {
+  products, productsLoading, productsError, showLogin,
+  asuraRole, isAsuraConfigured, policy,
+  onLoginSuccess, logout, applyProduct, repriceUnit,
+} = useProductPicker(items);
 </script>
 
 <template>
-  <DocPage class="flex flex-col" :title="`Quotation - ${meta.quotationNo}`">
+  <DocPage class="flex flex-col" :title="meta.quotationNo">
     <table class="w-full border-collapse">
       <tbody>
         <tr>
@@ -80,11 +104,24 @@ useDocManager(
     </table>
     <GoldBar />
 
+    <CustomerPicker :customers="customers" @pick="applyCustomer" />
+
     <InfoGrid :rows="infoRows" :model="info" />
+
+    <ProductPickerBar
+      :configured="isAsuraConfigured" :role="asuraRole" :products="products"
+      :loading="productsLoading" :error="productsError" :policy="policy"
+      @open-login="showLogin = true" @logout="logout"
+    />
 
     <MoneyItemsTable
       :items="items" :sum-qty="sumQty" :sum-amount="sumNet"
       :on-add-row="addRow" :on-remove-row="removeRow"
+      :products="asuraRole ? products : undefined"
+      :price-policy="policy ?? undefined"
+      hide-adjust-on-print
+      :on-pick-product="applyProduct"
+      :on-unit-change="repriceUnit"
     />
 
     <MoneyDocSummary :sum-amount="sumNet" />
@@ -120,4 +157,6 @@ useDocManager(
       :note="`Dokumen ini merupakan penawaran resmi dari ${CO.name}. Tidak mengikat sebelum konfirmasi tertulis. ${CO.phone} | ${CO.email}`"
     />
   </DocPage>
-</template> 
+
+  <EmailLogin v-if="showLogin" @success="onLoginSuccess" @skip="showLogin = false" />
+</template>

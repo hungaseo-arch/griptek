@@ -14,6 +14,12 @@ defineProps<{
   /** 모든 키의 값을 담는 reactive 레코드 */
   model: Record<string, string>;
 }>();
+
+// 날짜 키('date'/…Date/validUntil)는 달력 입력으로.
+function fieldType(key: string): 'text' | 'date' {
+  const k = key.toLowerCase();
+  return k === 'date' || k.endsWith('date') || k === 'validuntil' ? 'date' : 'text';
+}
 </script>
 
 <template>
@@ -25,7 +31,7 @@ defineProps<{
           {{ r.leftLabel }} :
         </td>
         <td class="border border-[#ddd] px-2 py-1 text-[10px] align-top text-left w-[33%]">
-          <FieldInput v-model="model[r.leftKey]" />
+          <FieldInput v-model="model[r.leftKey]" :type="fieldType(r.leftKey)" />
         </td>
         <td class="w-[4%]" />
         <td class="text-navy font-bold text-[9px] px-2 py-1 whitespace-nowrap
@@ -34,7 +40,7 @@ defineProps<{
           <template v-if="r.rightLabel">{{ r.rightLabel }} :</template>
         </td>
         <td class="border border-[#ddd] px-2 py-1 text-[10px] align-top text-left w-[33%]">
-          <FieldInput v-if="r.rightKey" v-model="model[r.rightKey]" />
+          <FieldInput v-if="r.rightKey" v-model="model[r.rightKey]" :type="fieldType(r.rightKey)" />
         </td>
       </tr>
     </tbody>

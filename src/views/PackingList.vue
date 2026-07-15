@@ -1,11 +1,14 @@
 <script setup lang="ts">
 /* DOC 4 — PACKING LIST. React 원본 PackingList() 이관 + 입력/자동집계. */
-import { reactive, ref } from 'vue';
+import { reactive, ref, watch, nextTick } from 'vue';
 import { CO } from '@/data/company';
 import { usePackingDoc } from '@/composables/usePackingDoc';
 import { useDocManager } from '@/composables/useDocManager';
-import { todayDocNo } from '@/utils/calc';
+import { useCustomers } from '@/composables/useCustomers';
+import { type Customer } from '@/lib/customersApi';
+import { companyDocNo, companyAbbr, todayISO } from '@/utils/calc';
 import DocPage from '@/components/DocPage.vue';
+import CustomerPicker from '@/components/CustomerPicker.vue';
 import CompanyHeader from '@/components/CompanyHeader.vue';
 import DocTitleBlock from '@/components/DocTitleBlock.vue';
 import GoldBar from '@/components/GoldBar.vue';
@@ -16,7 +19,7 @@ import SectionHeader from '@/components/SectionHeader.vue';
 import SigBlock from '@/components/SigBlock.vue';
 import FooterNote from '@/components/FooterNote.vue';
 
-const meta = reactive<Record<string, string>>({ plNumber: todayDocNo('PL'), date: '', refInvoiceNo: '' });
+const meta = reactive<Record<string, string>>({ plNumber: companyDocNo('PL', ''), date: todayISO(), refInvoiceNo: '' });
 const titleFields: { label: string; key: string }[] = [
   { label: 'PL Number', key: 'plNumber' },
   { label: 'Date', key: 'date' },
@@ -52,23 +55,44 @@ const infoRows: { leftLabel: string; leftKey: string; rightLabel: string; rightK
 const { items, totalPkgs, totalNetWt, totalGrossWt, totalCbm, addRow, removeRow } = usePackingDoc(3);
 const remarks = ref('');
 
+// 문서번호의 회사 약어 = Consignee명 기준 자동 갱신. 불러올 땐 저장된 번호 보존.
+let suppressDocNo = false;
+watch(() => consignee.company, (name) => {
+  if (suppressDocNo) return;
+  meta.plNumber = companyDocNo('PL', companyAbbr(name));
+});
+
+// 등록 고객 → 선택 시 자동입력 / 저장 시 자동 누적.
+const { customers } = useCustomers();
+function applyCustomer(c: Customer): void {
+  consignee.company = c.name;
+  consignee.address = c.address ?? '';
+  consignee.cityCountry = c.city_state ?? '';
+  consignee.phone = c.phone ?? '';
+  consignee.attention = c.contact ?? '';
+}
+
 useDocManager(
   'PL',
   () => meta.plNumber,
   () => ({ meta, shipper, consignee, info, items, remarks: remarks.value }),
   (p) => {
+    suppressDocNo = true;
     Object.assign(meta, p.meta as Record<string, string>);
     Object.assign(shipper, p.shipper as Record<string, string>);
     Object.assign(consignee, p.consignee as Record<string, string>);
     Object.assign(info, p.info as Record<string, string>);
     if (Array.isArray(p.items)) items.splice(0, items.length, ...(p.items as typeof items));
     remarks.value = typeof p.remarks === 'string' ? p.remarks : '';
+    nextTick(() => { suppressDocNo = false; });
   },
+  undefined,
+  () => ({ name: consignee.company, address: consignee.address, city_state: consignee.cityCountry, phone: consignee.phone, contact: consignee.attention }),
 );
 </script>
 
 <template>
-  <DocPage class="flex flex-col" :title="`Packing List - ${meta.plNumber}`">
+  <DocPage class="flex flex-col" :title="meta.plNumber">
     <table class="w-full border-collapse">
       <tbody>
         <tr>
@@ -78,6 +102,8 @@ useDocManager(
       </tbody>
     </table>
     <GoldBar />
+
+    <CustomerPicker :customers="customers" @pick="applyCustomer" />
 
     <PartyBlock
       left-title="SHIPPER / EXPORTER" right-title="CONSIGNEE / IMPORTER"

@@ -1,5 +1,5 @@
 {
-  "name": "GRIPTEK-business-forms",
+  "name": "griptek-business-forms",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -9,18 +9,21 @@
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
     "type-check": "vue-tsc --noEmit",
+    "og": "node scripts/make-og.mjs",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "node --env-file=.env deploy.js"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.106.2",
-    "vue": "^3.5.13"
+    "vue": "^3.5.13",
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
+    "@prerenderer/renderer-puppeteer": "^1.2.4",
+    "@prerenderer/rollup-plugin": "^0.3.12",
     "@tailwindcss/vite": "^4.0.0",
     "@types/node": "^22.5.5",
     "@vitejs/plugin-vue": "^5.2.1",
-    "gh-pages": "^6.3.0",
+    "basic-ftp": "^6.0.1",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.5.3",
     "vite": "^5.4.1",

@@ -24,7 +24,10 @@
       "Read(//private/tmp/**)",
       "Bash(\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --headless=new --disable-gpu --no-sandbox --dump-dom --virtual-time-budget=6000 \"http://localhost:5173/griptek/\" 2>/dev/null > /tmp/dom2.html *)",
       "Bash(curl -s -w '\\\\nHTTP %{http_code}\\\\n' 'https://qkswegnvkvdjaceewsfw.supabase.co/rest/v1/documents?select=id,doc_type,doc_no,created_at&order=created_at.desc' -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrc3dlZ252a3ZkamFjZWV3c2Z3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MzU3MjgsImV4cCI6MjA5NTUxMTcyOH0.SqU5EaHj5cTmK4bthLENwsTRINWF0-nzA9Sqpt_cenY' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrc3dlZ252a3ZkamFjZWV3c2Z3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MzU3MjgsImV4cCI6MjA5NTUxMTcyOH0.SqU5EaHj5cTmK4bthLENwsTRINWF0-nzA9Sqpt_cenY')",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('package.json','utf8'\\)\\); console.log\\('✓ package.json 유효함'\\)\")",
+      "Bash(node --env-file=.env -e \"console.log\\('FTP_USER:', process.env.FTP_USER\\); console.log\\('FTP_PASS set:', !!process.env.FTP_PASS\\)\")",
+      "Bash(node --env-file=.env -e ' *)"
     ],
     "additionalDirectories": [
       "/Users/seojonghwan/Desktop/graiptek",

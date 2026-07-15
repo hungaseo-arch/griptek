@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { getDocument, deleteDocument, type DocumentMeta } from '@/lib/documentsApi';
+import type { DocumentMeta } from '@/lib/documentsApi';
 import type { DocController } from '@/composables/useDocManager';
 import { NEXT_TYPE } from '@/lib/carryForward';
 
-const props = defineProps<{ controller: DocController | null }>();
+const props = withDefaults(
+  defineProps<{ controller: DocController | null; orientation?: 'horizontal' | 'vertical' }>(),
+  { orientation: 'horizontal' },
+);
 const emit = defineEmits<{ carry: [] }>();
+
+const isVertical = computed(() => props.orientation === 'vertical');
 
 const nextType = computed(() => (props.controller ? NEXT_TYPE[props.controller.docType] : null));
 
@@ -48,8 +53,7 @@ async function openLoad(): Promise<void> {
 async function pick(id: string): Promise<void> {
   if (!props.controller) return;
   try {
-    const doc = await getDocument(id);
-    props.controller.applyLoaded(doc);
+    await props.controller.load(id);
     modalOpen.value = false;
   } catch (e) {
     listError.value = e instanceof Error ? e.message : String(e);
@@ -64,11 +68,7 @@ async function removeFromList(id: string): Promise<void> {
   if (!props.controller) return;
   if (!window.confirm('Delete this document?')) return;
   try {
-    await deleteDocument(id);
-    if (props.controller.currentId.value === id) {
-      props.controller.currentId.value = null;
-      props.controller.loadedNo.value = null;
-    }
+    await props.controller.removeById(id);
     await refreshList();
   } catch (e) {
     listError.value = e instanceof Error ? e.message : String(e);
@@ -78,30 +78,33 @@ async function removeFromList(id: string): Promise<void> {
 </script>
 
 <template>
-  <div class="flex items-center gap-2">
+  <div :class="isVertical ? 'flex flex-col gap-2 items-stretch' : 'flex items-center gap-2'">
     <!-- status -->
-    <span v-if="errorText" class="text-[11px] text-red-300 font-medium max-w-60 truncate">
+    <span v-if="errorText"
+          class="text-[11px] text-red-300 font-medium truncate"
+          :class="isVertical ? '' : 'max-w-60'">
       ⚠ {{ errorText }}
     </span>
-    <span v-else-if="statusText" class="text-[11px] text-[#aac4df] font-medium">
+    <span v-else-if="statusText" class="text-[11px] text-[#aac4df] font-medium truncate">
       {{ statusText }}
     </span>
-    <span v-else-if="loadedNo" class="text-[11px] text-[#aac4df] font-medium">
+    <span v-else-if="loadedNo" class="text-[11px] text-[#aac4df] font-medium truncate">
       ✎ {{ loadedNo }}
     </span>
 
-    <button type="button" class="mgr-btn bg-white/10 text-white"
+    <button type="button" class="mgr-btn bg-white/10 text-white" :class="isVertical ? 'w-full' : ''"
             :disabled="!hasController || busy" @click="openLoad">
       📂 Load
     </button>
-    <button type="button" class="mgr-btn bg-gold text-navy"
+    <button type="button" class="mgr-btn bg-gold text-navy" :class="isVertical ? 'w-full' : ''"
             :disabled="!hasController || busy" @click="controller?.save()">
       💾 Save
     </button>
-    <button type="button" class="mgr-btn bg-white text-navy" @click="exportPdf">
+    <button type="button" class="mgr-btn bg-white text-navy" :class="isVertical ? 'w-full' : ''"
+            @click="exportPdf">
       📄 PDF
     </button>
-    <button v-if="nextType" type="button" class="mgr-btn bg-midblue text-white"
+    <button v-if="nextType" type="button" class="mgr-btn bg-midblue text-white" :class="isVertical ? 'w-full' : ''"
             :disabled="!hasController || busy" @click="emit('carry')">
       ▶ Carry to {{ nextType }}
     </button>
@@ -149,6 +152,10 @@ async function removeFromList(id: string): Promise<void> {
 
 <style scoped>
 .mgr-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
   border-radius: 7px;
   padding: 0.4rem 0.7rem;
   font-size: 12px;

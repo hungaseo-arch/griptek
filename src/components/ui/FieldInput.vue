@@ -12,6 +12,8 @@ const props = withDefaults(defineProps<{
   max?: string;
   formatNumber?: boolean;
   autoSize?: boolean;
+  /** 'date' 면 달력 선택 가능한 입력(<input type="date">) */
+  type?: 'text' | 'date';
 }>(), {
   align: 'left',
   placeholder: '',
@@ -22,6 +24,7 @@ const props = withDefaults(defineProps<{
   max: undefined,
   formatNumber: false,
   autoSize: false,
+  type: 'text',
 });
 
 const emit = defineEmits<{ (e: 'update:modelValue', value: string): void }>();
@@ -75,7 +78,7 @@ function onBlur() {
     class="field-input bg-transparent border-0 outline-none p-0 m-0 text-inherit leading-snug"
     :class="[alignClass[align], autoSize ? '' : 'w-full']"
     :style="sizeStyle"
-    :type="spinner ? 'number' : 'text'"
+    :type="type === 'date' ? 'date' : (spinner ? 'number' : 'text')"
     :inputmode="(numeric || spinner) ? 'decimal' : 'text'"
     :step="spinner ? step : undefined"
     :min="spinner ? min : undefined"

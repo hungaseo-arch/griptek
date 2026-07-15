@@ -1,8 +1,10 @@
 import { ref, inject, onMounted, onUnmounted, type InjectionKey, type Ref } from 'vue';
-import {
-  listDocuments, createDocument, updateDocument, deleteDocument,
-  type DocType, type DocumentMeta, type SavedDocument,
-} from '@/lib/documentsApi';
+import type { DocType, DocumentMeta, SavedDocument, DocBackend } from '@/lib/documentsApi';
+import { apiBackend } from '@/lib/apiDocs';
+import { upsertCustomer, type CustomerInput } from '@/lib/customersApi';
+import { upsertVendor, type VendorInput } from '@/lib/vendorsApi';
+
+export type { DocBackend } from '@/lib/documentsApi';
 
 /** 상단 바(DocManagerBar)가 현재 활성 문서를 제어하기 위한 컨트롤러. */
 export interface DocController {
@@ -16,6 +18,8 @@ export interface DocController {
   update: () => Promise<void>;
   remove: () => Promise<void>;
   list: () => Promise<DocumentMeta[]>;
+  load: (id: string) => Promise<void>;
+  removeById: (id: string) => Promise<void>;
   applyLoaded: (doc: SavedDocument) => void;
   snapshot: () => Record<string, unknown>;
 }
@@ -47,6 +51,9 @@ export function useDocManager(
   getDocNo: () => string,
   getPayload: () => Record<string, unknown>,
   applyPayload: (payload: Record<string, unknown>) => void,
+  backend: DocBackend = apiBackend,
+  getCustomer?: () => CustomerInput | null,
+  getVendor?: () => VendorInput | null,
 ): DocController {
   const currentId = ref<string | null>(null);
   const loadedNo = ref<string | null>(null);
@@ -66,28 +73,36 @@ export function useDocManager(
     }
   }
 
+  // 저장/수정 시 구매고객·벤더를 DB에 자동 누적(이름 기준 upsert). best-effort.
+  async function upsertParties(): Promise<void> {
+    if (getCustomer) { const c = getCustomer(); if (c && c.name && c.name.trim()) await upsertCustomer(c); }
+    if (getVendor) { const v = getVendor(); if (v && v.name && v.name.trim()) await upsertVendor(v); }
+  }
+
   async function save(): Promise<void> {
     await run(async () => {
-      const doc = await createDocument(docType, getDocNo(), getPayload());
+      const doc = await backend.create(docType, getDocNo(), getPayload());
       currentId.value = doc.id;
       loadedNo.value = doc.doc_no;
       status.value = `Saved ${new Date().toLocaleString('en-GB')}`;
+      await upsertParties();
     });
   }
 
   async function update(): Promise<void> {
     if (!currentId.value) return;
     await run(async () => {
-      const doc = await updateDocument(currentId.value as string, getDocNo(), getPayload());
+      const doc = await backend.update(currentId.value as string, getDocNo(), getPayload());
       loadedNo.value = doc.doc_no;
       status.value = `Updated ${new Date().toLocaleString('en-GB')}`;
+      await upsertParties();
     });
   }
 
   async function remove(): Promise<void> {
     if (!currentId.value) return;
     await run(async () => {
-      await deleteDocument(currentId.value as string);
+      await backend.remove(currentId.value as string);
       currentId.value = null;
       loadedNo.value = null;
       status.value = 'Deleted';
@@ -102,10 +117,27 @@ export function useDocManager(
     status.value = `Loaded ${doc.doc_no}`;
   }
 
+  /** 목록에서 선택한 문서를 불러와 폼에 반영. */
+  async function load(id: string): Promise<void> {
+    const doc = await backend.get(id);
+    applyLoaded(doc);
+  }
+
+  /** 목록의 임의 문서를 삭제(현재 편집 중인 문서면 상태 초기화). */
+  async function removeById(id: string): Promise<void> {
+    await backend.remove(id);
+    if (currentId.value === id) {
+      currentId.value = null;
+      loadedNo.value = null;
+    }
+  }
+
   const controller: DocController = {
     docType, currentId, loadedNo, busy, error, status,
     save, update, remove,
-    list: () => listDocuments(docType),
+    list: () => backend.list(docType),
+    load,
+    removeById,
     applyLoaded,
     snapshot: () => JSON.parse(JSON.stringify(getPayload())) as Record<string, unknown>,
   };

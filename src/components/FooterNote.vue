@@ -5,7 +5,7 @@ defineProps<{ note: string }>();
 
 <template>
   <div
-    class="bg-graybg px-3 py-1.75 text-[8.5px] text-[#666] italic
+    class="doc-footer bg-graybg px-3 py-1.75 text-[8.5px] text-[#666] italic
            border-t-2 border-gold leading-[1.7]"
   >
     {{ note }}
